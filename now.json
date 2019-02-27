@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "name": "stremio-cdn-videos",
+  "alias": "stremio-cdn-videos",
+  "builds": [
+    { "src": "**/*.js", "use": "@now/node" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "index.js" }
+  ]
+}

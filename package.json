@@ -1,0 +1,20 @@
+{
+  "name": "stremio-cdn-videos",
+  "version": "1.0.0",
+  "author": "TheBeastLT <pauliox@beyond.lt>",
+  "license": "MIT",
+  "main": "index.js",
+  "engines": {
+    "npm": "6.x",
+    "node": "10.x"
+  },
+  "scripts": {
+    "start": "node ./index.js",
+    "deploy": "now --public && now alias"
+  },
+  "dependencies": {
+    "request": "^2.75.0",
+    "lodash": "^4.17.11",
+    "express": "^4.16.4"
+  }
+}
