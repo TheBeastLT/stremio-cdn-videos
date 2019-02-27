@@ -10,23 +10,30 @@ class Provider {
   constructor() {}
 
   async movieStreams(imdbId) {
-    return checkIfAvailable(`${VIDSRC_URL}/embed/${imdbId}/`)
-        .then(url => [streamInfo(url)]);
+    return retrieveMirrors(`${VIDSRC_URL}/embed/${imdbId}/`)
+        .then(mirrors => mirrors.map(mirror => streamInfo(mirror)));
   }
 
   async seriesStreams(imdbId, season, episode) {
-    return checkIfAvailable(`${VIDSRC_URL}/embed/${imdbId}/${season}-${episode}/`)
+    return retrieveMirrors(`${VIDSRC_URL}/embed/${imdbId}/${season}-${episode}/`)
         .catch(() => getAbsoluteEpisode(imdbId, season, episode)
-            .then(absolute => checkIfAvailable(`${VIDSRC_URL}/embed/${imdbId}/1-${absolute}/`)))
-        .then(url => [streamInfo(url)]);
+            .then(absolute => retrieveMirrors(`${VIDSRC_URL}/embed/${imdbId}/1-${absolute}/`)))
+        .then(mirrors => mirrors.map(mirror => streamInfo(mirror)));
   }
 }
 
-function checkIfAvailable(url) {
+// @TODO extract actual streams somehow from the response js code
+function retrieveMirrors(url) {
   return new Promise((resolve, reject) => {
     request.get(url, { timeout: 1000 }, (err, res, body) => {
       if (res.statusCode === 200 && body && !body.match(/not found/i)) {
-        resolve(url);
+        const matches = body.match(/<div.+class=(?:"server"|"server active").+/gi);
+        const mirrors = matches && matches
+            .map(mirrorDiv => ({
+              name: mirrorDiv.match(/>(.+)<\/div>/)[1],
+              url: url.replace('embed', `server${mirrorDiv.match(/data="(.+)"/)[1]}`)
+            }));
+        resolve(mirrors || []);
       } else {
         reject(new Error(`url not available`));
       }
@@ -64,11 +71,11 @@ function getAbsoluteEpisode(imdbId, season, episode) {
   });
 }
 
-function streamInfo(url) {
+function streamInfo(mirror) {
   return {
     name: 'CDN',
-    title: PROVIDER_NAME,
-    externalUrl: url
+    title: `${PROVIDER_NAME}\n${mirror.name}`,
+    externalUrl: mirror.url
   }
 }
 
