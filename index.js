@@ -1,8 +1,10 @@
-const { Provider } = require('./providers/vidsrc_provider');
+const vidsrc = require('./providers/vidsrc_provider');
+const vidstreaming = require('./providers/vidstreaming_provider');
+const { movieMetadata, seriesMetadata } = require('./lib/metadata');
 const express = require("express");
 const addon = express();
 
-const PROVIDERS = [new Provider()];
+const PROVIDERS = [new vidsrc.Provider(), new vidstreaming.Provider()];
 const MANIFEST = {
   id: 'com.stremio.cdn.videos',
   version: '1.0.0',
@@ -48,23 +50,26 @@ addon.get('/stream/:type/:id.json', function(req, res, next) {
     .then((streams) => respond(res, { streams }))
     .catch((error) => {
       console.log(`Failed request ${req.params.id}: ${error}`);
-      return next(error);
+      return respond(res,  { streams: [] });
     });
 });
 
 async function seriesStreamHandler(id) {
-  const split = id.split(':');
-  const imdbId = split[0];
-  const season = parseInt(split[1], 10);
-  const episode = parseInt(split[2], 10);
+  const metadata = await seriesMetadata(id);
 
-  return Promise.all(PROVIDERS.map(provider => provider.seriesStreams(imdbId, season, episode)))
-      .then(results => results.reduce((a, b) => a.concat(b), []))
+  const providerStreams = PROVIDERS
+      .map(provider => provider.seriesStreams(metadata).catch(() => []));
+
+  return Promise.all(providerStreams).then(results => results.reduce((a, b) => a.concat(b), []))
 }
 
 async function movieStreamHandler(id) {
-  return Promise.all(PROVIDERS.map(provider => provider.movieStreams(id)))
-      .then(results => results.reduce((a, b) => a.concat(b), []))
+  const metadata = await movieMetadata(id);
+
+  const providerStreams = PROVIDERS
+      .map(provider => provider.movieStreams(metadata).catch(() => []));
+
+  return Promise.all(providerStreams).then(results => results.reduce((a, b) => a.concat(b), []))
 }
 
 function respond(res, data) {

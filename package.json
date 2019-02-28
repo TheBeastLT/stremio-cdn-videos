@@ -13,8 +13,8 @@
     "deploy": "now --public && now alias"
   },
   "dependencies": {
-    "request": "^2.75.0",
+    "express": "^4.16.4",
     "lodash": "^4.17.11",
-    "express": "^4.16.4"
+    "needle": "^2.2.4"
   }
 }
