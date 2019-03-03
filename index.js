@@ -1,6 +1,7 @@
 const vidsrc = require('./providers/vidsrc_provider');
 const vidstreaming = require('./providers/vidstreaming_provider');
 const { movieMetadata, seriesMetadata } = require('./lib/metadata');
+const { cacheWrapStream } = require('./lib/cache');
 const express = require("express");
 const addon = express();
 
@@ -46,7 +47,7 @@ addon.get('/stream/:type/:id.json', function(req, res, next) {
     fallback: () => Promise.resolve([])
   };
 
-  return (handlers[req.params.type] || handlers.fallback)()
+  return cacheWrapStream(req.params.id, handlers[req.params.type] || handlers.fallback)
     .then((streams) => respond(res, { streams }))
     .catch((error) => {
       console.log(`Failed request ${req.params.id}: ${error}`);
