@@ -1,5 +1,5 @@
-const _ = require('lodash');
-const needle = require('needle');
+const { getContentMatches, scrape } = require('../lib/scraper');
+const { streamInfo } = require('../lib/streamInfo');
 
 const PROVIDER_NAME = "VidStreaming.io";
 const VIDSTREAMING_URL = 'https://vidstreaming.io';
@@ -16,12 +16,8 @@ class Provider {
     const title = movieMetadata.title.replace(/\s/g, '-');
 
     return Promise.all([
-      retrieveMirror(`${VIDSTREAMING_URL}/videos/${title}-episode-1`)
-        .then(url => [streamInfo(url)])
-        .catch(() => []),
-      retrieveMirror(`${VIDSTREAMING_URL}/videos/${title}-dub-episode-1`)
-        .then(url => [streamInfo(url, true)])
-        .catch(() => [])
+      retrieveMirrors(`${VIDSTREAMING_URL}/videos/${title}-episode-1`).catch(() => []),
+      retrieveMirrors(`${VIDSTREAMING_URL}/videos/${title}-dub-episode-1`, true).catch(() => [])
     ]).then(results => results.reduce((a, b) => a.concat(b), []));
   }
 
@@ -34,45 +30,26 @@ class Provider {
     const absoluteEpisode = seriesMetadata.absoluteEpisode;
 
     return Promise.all([
-      retrieveMirror(`${VIDSTREAMING_URL}/videos/${title}-episode-${absoluteEpisode}`)
-        .catch(() => retrieveMirror(`${VIDSTREAMING_URL}/videos/${title}--episode-${absoluteEpisode}`))
-        .then(url => [streamInfo(url)])
+      retrieveMirrors(`${VIDSTREAMING_URL}/videos/${title}-episode-${absoluteEpisode}`)
+        .catch(() => retrieveMirrors(`${VIDSTREAMING_URL}/videos/${title}--episode-${absoluteEpisode}`))
         .catch(() => []),
-      retrieveMirror(`${VIDSTREAMING_URL}/videos/${title}-dub-episode-${absoluteEpisode}`)
-        .then(url => [streamInfo(url, true)])
+      retrieveMirrors(`${VIDSTREAMING_URL}/videos/${title}-dub-episode-${absoluteEpisode}`, true)
         .catch(() => [])
     ]).then(results => results.reduce((a, b) => a.concat(b), []));
   }
 }
 
-function retrieveMirror(url) {
-  return new Promise((resolve, reject) => {
-    let body = '';
-    needle.get(url)
-      .on('readable', function() {
-        while (data = this.read()) {
-          body = body.concat(data.toString());
-          const mirrorMatch = body.match(/<iframe.+"(.*vidstreaming\.io[^"]+)"/i);
-          const mirror = mirrorMatch && mirrorMatch[1].replace(/^\/\//, 'https://');
-          if (mirror) {
-            resolve(mirror);
-            this.destroy();
-          }
-        }
-      })
-      .on('done', () => {
-        // means that promise was not resolved previously so no mirror was found
-        reject(new Error(`vidstreaming url not available`));
-      });
-  });
-}
-
-function streamInfo(url, dub = false) {
-  return {
-    name: 'CDN',
-    title: `${PROVIDER_NAME}${dub ? ' (Dub)': ''}`,
-    externalUrl: url
-  }
+function retrieveMirrors(url, dub = false) {
+  return getContentMatches(url, /<iframe.+"(.*vidstreaming\.io[^"]+)"/i)
+      .then((matches) => matches[1].replace(/^\/\//, 'https://'))
+      .then((videoUrl) => getContentMatches(videoUrl, /<ul class="list-server-items">(.+)<\/ul>/s))
+      .then((matches) => matches[1].match(/<li class="linkserver".+<\/li>/g)
+          .map(mirrorDiv => ({
+            name: mirrorDiv.match(/>(.+)<\/li>/)[1],
+            url: mirrorDiv.match(/data-video="(.+)"/)[1].replace(/^\/\//, 'https://')
+          })))
+      .then((mirrors) => Promise.all(mirrors.map(mirror => scrape(mirror))))
+      .then((mirrors) => mirrors.map(mirror => streamInfo(PROVIDER_NAME, mirror, dub)));
 }
 
 exports.Provider = Provider;

@@ -61,6 +61,10 @@ async function seriesStreamHandler(id) {
       .map(provider => provider.seriesStreams(metadata).catch(() => []));
 
   return Promise.all(providerStreams).then(results => results.reduce((a, b) => a.concat(b), []))
+      // .then((results) => {
+      //   console.log(results);
+      //   return results;
+      // });
 }
 
 async function movieStreamHandler(id) {
@@ -70,6 +74,10 @@ async function movieStreamHandler(id) {
       .map(provider => provider.movieStreams(metadata).catch(() => []));
 
   return Promise.all(providerStreams).then(results => results.reduce((a, b) => a.concat(b), []))
+      // .then((results) => {
+      //   console.log(results);
+      //   return results;
+      // });
 }
 
 function respond(res, data) {
@@ -80,6 +88,3 @@ function respond(res, data) {
 }
 
 module.exports = addon;
-// addon.listen(7000, function () {
-//   console.log('Add-on Repository URL: http://127.0.0.1:7000/manifest.json');
-// });
