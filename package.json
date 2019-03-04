@@ -10,7 +10,7 @@
   },
   "scripts": {
     "start": "node ./index.js",
-    "deploy": "now --public -e MONGODB_URI=@mongodb-uri && now alias"
+    "deploy": "now -e MONGODB_URI=@mongodb-uri && now alias"
   },
   "dependencies": {
     "cache-manager": "^2.9.0",

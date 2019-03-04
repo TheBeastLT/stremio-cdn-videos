@@ -4,10 +4,10 @@ Stremio addon for retrieving CDN links for movies, series and anime.
 
 ## Deploy
 
-Deploy using `now` command:
+Deploy using `npm` command:
 
 ```
-now --public && now alias
+npm run deploy
 ```
 
 ## Publish
