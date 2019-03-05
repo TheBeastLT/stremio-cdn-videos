@@ -57,24 +57,29 @@ addon.get('/stream/:type/:id.json', function(req, res, next) {
 
 async function seriesStreamHandler(id) {
   const metadata = await seriesMetadata(id);
+  console.log(metadata);
 
   const providerStreams = PROVIDERS
-      .map(provider => provider.seriesStreams(metadata).catch(() => []));
+      .map((provider) => provider.seriesStreams(metadata).catch(() => []));
 
-  return Promise.all(providerStreams).then(results => results.reduce((a, b) => a.concat(b), []))
-      // .then((results) => {
-      //   console.log(results);
-      //   return results;
-      // });
+  return Promise.all(providerStreams)
+      .then((results) => results.reduce((a, b) => a.concat(b), []))
+      .then((results) => results.filter(result => result.url || result.externalUrl))
+      .then((results) => {
+        console.log(results);
+        return results;
+      });
 }
 
 async function movieStreamHandler(id) {
   const metadata = await movieMetadata(id);
 
   const providerStreams = PROVIDERS
-      .map(provider => provider.movieStreams(metadata).catch(() => []));
+      .map((provider) => provider.movieStreams(metadata).catch(() => []));
 
-  return Promise.all(providerStreams).then(results => results.reduce((a, b) => a.concat(b), []))
+  return Promise.all(providerStreams)
+      .then((results) => results.reduce((a, b) => a.concat(b), []))
+      .then((results) => results.filter(result => result.url || result.externalUrl))
       // .then((results) => {
       //   console.log(results);
       //   return results;
