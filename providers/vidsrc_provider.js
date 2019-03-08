@@ -24,7 +24,6 @@ class Provider {
   }
 }
 
-// @TODO extract actual streams somehow from the response js code
 function retrieveMirrors(url) {
   return getContentMatches(url, /<div id="server_list"[^>]+>(.+)<\/br>\s+<\/div>/s)
       .then((matches) => matches[1].match(/<div.+class=(?:"server"|"server active").+/gi)

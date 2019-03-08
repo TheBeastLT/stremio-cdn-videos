@@ -36,7 +36,7 @@ addon.get('/manifest.json', function(req, res) {
   respond(res, MANIFEST);
 });
 
-addon.get('/stream/:type/:id.json', function(req, res, next) {
+addon.get('/stream/:type/:id.json', function(req, res) {
   if (!req.params.id.match(/tt\d+/i)) {
     return respond(res,  { streams: [] });
   }
@@ -57,7 +57,6 @@ addon.get('/stream/:type/:id.json', function(req, res, next) {
 
 async function seriesStreamHandler(id) {
   const metadata = await seriesMetadata(id);
-  console.log(metadata);
 
   const providerStreams = PROVIDERS
       .map((provider) => provider.seriesStreams(metadata).catch(() => []));
@@ -65,10 +64,10 @@ async function seriesStreamHandler(id) {
   return Promise.all(providerStreams)
       .then((results) => results.reduce((a, b) => a.concat(b), []))
       .then((results) => results.filter(result => result.url || result.externalUrl))
-      .then((results) => {
-        console.log(results);
-        return results;
-      });
+      // .then((results) => {
+      //   console.log(results);
+      //   return results;
+      // });
 }
 
 async function movieStreamHandler(id) {
