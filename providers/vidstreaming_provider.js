@@ -39,7 +39,7 @@ class Provider {
   }
 }
 
-function retrieveMirrors(url, dub = false) {
+function retrieveMirrors(url, dubbed = false) {
   return getContentMatches(url, /<iframe.+"(.*vidstreaming\.io[^"]+)"/i)
       .then((matches) => matches[1].replace(/^\/\//, 'https://'))
       .then((videoUrl) => getContentMatches(videoUrl, /<ul class="list-server-items">(.+)<\/ul>/s))
@@ -49,7 +49,8 @@ function retrieveMirrors(url, dub = false) {
             url: mirrorDiv.match(/data-video="(.+)"/)[1].replace(/^\/\//, 'https://')
           })))
       .then((mirrors) => Promise.all(mirrors.map(mirror => scrape(mirror))))
-      .then((mirrors) => mirrors.map(mirror => streamInfo(PROVIDER_NAME, mirror, dub)));
+      .then((mirrors) => mirrors.map((mirror) => { mirror.dubbed = dubbed; return mirror; }))
+      .then((mirrors) => mirrors.map(mirror => streamInfo(PROVIDER_NAME, mirror)));
 }
 
 exports.Provider = Provider;

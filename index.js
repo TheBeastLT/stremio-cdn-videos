@@ -1,11 +1,12 @@
 const vidsrc = require('./providers/vidsrc_provider');
 const vidstreaming = require('./providers/vidstreaming_provider');
+const wonderfulsubs = require('./providers/wonderfulsubs_provider');
 const { movieMetadata, seriesMetadata } = require('./lib/metadata');
 const { cacheWrapStream } = require('./lib/cache');
 const express = require("express");
 const addon = express();
 
-const PROVIDERS = [new vidsrc.Provider(), new vidstreaming.Provider()];
+const PROVIDERS = [new vidsrc.Provider(), new vidstreaming.Provider(), new wonderfulsubs.Provider];
 const MANIFEST = {
   id: 'com.stremio.cdn.videos',
   version: '1.0.0',
