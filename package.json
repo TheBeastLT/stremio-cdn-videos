@@ -3,20 +3,20 @@
   "version": "1.0.0",
   "author": "TheBeastLT <pauliox@beyond.lt>",
   "license": "MIT",
-  "main": "index.js",
+  "main": "index.local.js",
   "engines": {
     "npm": "6.x",
     "node": "10.x"
   },
   "scripts": {
-    "start": "node ./index.js",
-    "deploy": "now -e MONGODB_URI=@mongodb-uri -e LOCAL_NETWORK=false && now alias"
+    "start": "node ./index.local.js",
+    "deploy": "now -e LOCAL_NETWORK=false -e MONGODB_URI=@mongodb-uri && now alias"
   },
   "dependencies": {
     "cache-manager": "^2.9.0",
     "cache-manager-mongodb": "^0.2.1",
-    "express": "^4.16.4",
     "lodash": "^4.17.11",
-    "needle": "^2.2.4"
+    "needle": "^2.2.4",
+    "stremio-addon-sdk": "^1.2.0"
   }
 }

@@ -3,9 +3,11 @@
   "name": "stremio-cdn-videos",
   "alias": "stremio-cdn-videos",
   "builds": [
+    { "src": "static/**/*", "use": "@now/static" },
     { "src": "**/*.js", "use": "@now/node" }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "index.js" }
+    { "src": "/static/(.*)", "dest": "/static/$1" },
+    { "src": "/(.*)", "dest": "serverless.js" }
   ]
 }

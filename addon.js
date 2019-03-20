@@ -1,13 +1,13 @@
+const { addonBuilder } = require("stremio-addon-sdk");
 const vidsrc = require('./providers/vidsrc_provider');
 const vidstreaming = require('./providers/vidstreaming_provider');
 const wonderfulsubs = require('./providers/wonderfulsubs_provider');
 const { movieMetadata, seriesMetadata } = require('./lib/metadata');
 const { cacheWrapStream } = require('./lib/cache');
-const express = require("express");
-const addon = express();
 
 const PROVIDERS = [new vidsrc.Provider(), new vidstreaming.Provider(), new wonderfulsubs.Provider];
-const MANIFEST = {
+
+const builder = new addonBuilder({
   id: 'com.stremio.cdn.videos',
   version: '1.0.0',
   name: 'CDN Videos',
@@ -16,43 +16,27 @@ const MANIFEST = {
   resources: ['stream'],
   types: ['movie', 'series'],
   idPrefixes: ['tt'],
-  background: 'http://www.pptbackgrounds.org/uploads/film-movies-movie-making-minimalism-creative-backgrounds-wallpapers.jpg',
-  logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/High-contrast-video-x-generic.svg/2000px-High-contrast-video-x-generic.svg.png',
+  background: '/static/images/background.jpg',
+  logo: '/static/images/logo.png',
   contactEmail: 'pauliox@beyond.lt'
-};
-
-addon.param('type', function(req, res, next, val) {
-  if (MANIFEST.types.includes(val)) {
-    next();
-  } else {
-    next("Unsupported type " + val);
-  }
 });
 
-addon.get('/', function(req, res) {
-  res.redirect('/manifest.json')
-});
-
-addon.get('/manifest.json', function(req, res) {
-  respond(res, MANIFEST);
-});
-
-addon.get('/stream/:type/:id.json', function(req, res) {
-  if (!req.params.id.match(/tt\d+/i)) {
-    return respond(res,  { streams: [] });
+builder.defineStreamHandler((args) => {
+  if (!args.id.match(/tt\d+/i)) {
+    return Promise.resolve({ streams: [] });
   }
 
   const handlers = {
-    series: () => seriesStreamHandler(req.params.id),
-    movie: () => movieStreamHandler(req.params.id),
+    series: () => seriesStreamHandler(args.id),
+    movie: () => movieStreamHandler(args.id),
     fallback: () => Promise.resolve([])
   };
 
-  return cacheWrapStream(req.params.id, handlers[req.params.type] || handlers.fallback)
-    .then((streams) => respond(res, { streams }))
+  return cacheWrapStream(args.id, handlers[args.type] || handlers.fallback)
+    .then((streams) => ({ streams: streams, cacheMaxAge: 3600 }))
     .catch((error) => {
-      console.log(`Failed request ${req.params.id}: ${error}`);
-      return respond(res,  { streams: [] });
+      console.log(`Failed request ${args.id}: ${error}`);
+      throw error;
     });
 });
 
@@ -86,11 +70,4 @@ async function movieStreamHandler(id) {
       // });
 }
 
-function respond(res, data) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', '*');
-  res.setHeader('Content-Type', 'application/json');
-  res.send(data);
-}
-
-module.exports = addon;
+module.exports = builder.getInterface();

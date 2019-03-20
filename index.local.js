@@ -1,5 +1,4 @@
-const addon = require('./index');
+const { serveHTTP } = require('stremio-addon-sdk');
+const addonInterface = require('./addon');
 
-addon.listen(7000, function () {
-  console.log('Add-on Repository URL: http://127.0.0.1:7000/manifest.json');
-});
+serveHTTP(addonInterface, { port: 7000, static: '/static' });
