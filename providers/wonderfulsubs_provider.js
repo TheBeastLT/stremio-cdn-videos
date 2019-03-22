@@ -1,5 +1,4 @@
 const needle = require('needle');
-const { getContent } = require('../lib/scraper');
 const { streamInfo } = require('../lib/streamInfo');
 const { cacheWrapWonderfulSubs } = require('../lib/cache');
 
@@ -19,6 +18,7 @@ class Provider {
     return cacheWrapWonderfulSubs(preparedTitle, () => seriesData(preparedTitle))
         .then((data) => data.seasons
             .filter((season) => season.type === 'specials')
+            .filter((season) => !season.kitsu_id || season.kitsu_id === data.kitsu_id)
             .map((season) => season.episodes)
             .reduce((a, b) => a.concat(b), []))
         .then((episodes) => Promise.all(episodes
@@ -39,6 +39,26 @@ class Provider {
         .then((data) => data.seasons
             .filter((season) => season.type === 'episodes')
             .filter((season) => !season.has_older_series || season.has_older_series && season.title.includes(year))
+            .reduce((seasons, nextSeason) => {
+              nextSeason.kitsu_id = nextSeason.kitsu_id || data.kitsu_id; // some main seasons dont have id assigned
+              const existingSeason = seasons.find((season) => season.kitsu_id === nextSeason.kitsu_id);
+              if (existingSeason) {
+                existingSeason.episodes = existingSeason.episodes.concat(nextSeason.episodes)
+                    .reduce((episodes, nextEp) => {
+                        const existingEp = episodes.find((episode) => episode.episode_number === nextEp.episode_number);
+                        if (existingEp) {
+                          existingEp.sources = existingEp.sources.concat(nextEp.sources);
+                        } else {
+                          episodes.push(nextEp);
+                        }
+                        return episodes;
+                      }, []);
+              } else {
+                seasons.push(nextSeason)
+              }
+              return seasons;
+            }, []))
+        .then((seasons) => seasons
             .reduce((current, next) => {
               if (current.episodes.length < searchEpisode) {
                 searchEpisode = searchEpisode - current.episodes.length;
