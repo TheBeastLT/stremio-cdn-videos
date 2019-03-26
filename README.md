@@ -18,5 +18,5 @@ Use `curl` command to publish addon to Stremio:
 curl 'https://api.strem.io/api/addonPublish' \
   -X POST \
   -H 'Content-Type: application/json' \
-  -d '{ "transportUrl": "https://stremio-cdn-videos.now.sh/manifest.json", "transportName": "http" }'
+  -d '{ "transportUrl": "https://cdn-videos.ga/manifest.json", "transportName": "http" }'
 ```

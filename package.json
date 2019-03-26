@@ -10,7 +10,7 @@
   },
   "scripts": {
     "start": "node ./index.local.js",
-    "deploy": "now -e LOCAL_NETWORK=false -e MONGODB_URI=@mongodb-uri && now alias"
+    "deploy": "now -e LOCAL_NETWORK=false -e MONGODB_URI=@mongodb-uri && now alias cdn-videos.ga"
   },
   "dependencies": {
     "cache-manager": "^2.9.0",

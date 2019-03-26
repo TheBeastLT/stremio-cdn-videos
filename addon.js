@@ -16,8 +16,8 @@ const builder = new addonBuilder({
   resources: ['stream'],
   types: ['movie', 'series'],
   idPrefixes: ['tt'],
-  background: '/static/images/background.jpg',
-  logo: '/static/images/logo.png',
+  background: 'https://i.imgur.com/Pjg3e0E.jpg',
+  logo: 'https://i.imgur.com/83CPdiS.png',
   contactEmail: 'pauliox@beyond.lt'
 });
 
