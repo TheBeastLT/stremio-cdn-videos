@@ -122,7 +122,7 @@ function retrieveStreams(episode, mirror) {
       })
       .then((urls) => urls
           // stremio does not support 'Auto (HLS) encrypted' or 'Auto (DASH)' formats
-          .filter((url) => url.type.match(/mp4/i) || url.src.match(/master\.m3u/))
+          //.filter((url) => url.type.match(/mp4/i) || url.src.match(/master\.m3u/))
           .map((url) => ({
               name: mirror.source && `[${mirror.source.toUpperCase()}] ${episode.title.replace(',', '')}`,
               url: url.src,
