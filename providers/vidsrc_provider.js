@@ -8,12 +8,16 @@ class Provider {
 
   constructor() {}
 
+  isApplicable(metadata) {
+    return metadata.imdbId;
+  }
+
   async movieStreams(movieMetadata) {
-    return retrieveMirrors(`${VIDSRC_URL}/embed/${movieMetadata.imdb}/`);
+    return retrieveMirrors(`${VIDSRC_URL}/embed/${movieMetadata.imdbId}/`);
   }
 
   async seriesStreams(seriesMetadata) {
-    const imdbId = seriesMetadata.imdb;
+    const imdbId = seriesMetadata.imdbId;
     const season = seriesMetadata.season;
     const episode = seriesMetadata.episode;
     const absoluteEpisode = seriesMetadata.absoluteEpisode;

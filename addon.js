@@ -6,6 +6,7 @@ const { movieMetadata, seriesMetadata } = require('./lib/metadata');
 const { cacheWrapStream } = require('./lib/cache');
 
 const PROVIDERS = [new vidsrc.Provider(), new vidstreaming.Provider(), new wonderfulsubs.Provider];
+const CACHE_MAX_AGE = process.env.CACHE_MAX_AGE || 43200;
 
 const builder = new addonBuilder({
   id: 'com.stremio.cdn.videos',
@@ -15,14 +16,14 @@ const builder = new addonBuilder({
   catalogs: [],
   resources: ['stream'],
   types: ['movie', 'series'],
-  idPrefixes: ['tt'],
+  idPrefixes: ['tt', 'kitsu'],
   background: 'https://i.imgur.com/Pjg3e0E.jpg',
   logo: 'https://i.imgur.com/83CPdiS.png',
   contactEmail: 'pauliox@beyond.lt'
 });
 
 builder.defineStreamHandler((args) => {
-  if (!args.id.match(/tt\d+/i)) {
+  if (!args.id.match(/tt\d+/i) && !args.id.match(/kitsu:\d+/i) ) {
     return Promise.resolve({ streams: [] });
   }
 
@@ -33,7 +34,7 @@ builder.defineStreamHandler((args) => {
   };
 
   return cacheWrapStream(args.id, handlers[args.type] || handlers.fallback)
-    .then((streams) => ({ streams: streams, cacheMaxAge: 3600 }))
+    .then((streams) => ({ streams: streams, cacheMaxAge: CACHE_MAX_AGE }))
     .catch((error) => {
       console.log(`Failed request ${args.id}: ${error}`);
       throw error;
@@ -44,6 +45,7 @@ async function seriesStreamHandler(id) {
   const metadata = await seriesMetadata(id);
 
   const providerStreams = PROVIDERS
+      .filter((provider) => provider.isApplicable(metadata))
       .map((provider) => provider.seriesStreams(metadata).catch(() => []));
 
   return Promise.all(providerStreams)
@@ -59,6 +61,7 @@ async function movieStreamHandler(id) {
   const metadata = await movieMetadata(id);
 
   const providerStreams = PROVIDERS
+      .filter((provider) => provider.isApplicable(metadata))
       .map((provider) => provider.movieStreams(metadata).catch(() => []));
 
   return Promise.all(providerStreams)

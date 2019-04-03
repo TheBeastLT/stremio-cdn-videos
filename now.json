@@ -1,7 +1,7 @@
 {
   "version": 2,
   "name": "stremio-cdn-videos",
-  "alias": "stremio-cdn-videos",
+  "alias": "cdn-videos.ga",
   "builds": [
     { "src": "static/**/*", "use": "@now/static" },
     { "src": "**/*.js", "use": "@now/node" }
@@ -9,5 +9,9 @@
   "routes": [
     { "src": "/static/(.*)", "dest": "/static/$1" },
     { "src": "/(.*)", "dest": "serverless.js" }
-  ]
+  ],
+  "env": {
+    "MONGODB_URI": "@mongodb-uri",
+    "LOCAL_NETWORK": "false"
+  }
 }
