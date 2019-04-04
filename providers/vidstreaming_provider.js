@@ -1,4 +1,4 @@
-const { getContent, getContentMatches, scrape } = require('../lib/scraper');
+const { getContentMatches, scrape } = require('../lib/scraper');
 const { streamInfo } = require('../lib/streamInfo');
 const { escapeTitle } = require('../lib/metadata');
 const { cacheSlug, getSlug } = require('../lib/cache');
@@ -77,27 +77,15 @@ function prepareTitle(title) {
 function retrieveMirrors(url, dubbed = false) {
   return getContentMatches(url, /<iframe.+"(.*vidstreaming\.io[^"]+)"/i)
       .then((matches) => matches[1].replace(/^\/\//, 'https://'))
-      .then((videoUrl) => getContent(videoUrl))
-      .then((response) => extractMirrors(response.body))
+      .then((videoUrl) => getContentMatches(videoUrl, /<ul class="list-server-items">(.+)<\/ul>/s))
+      .then((matches) => matches[1].match(/<li class="linkserver".+<\/li>/g)
+          .map(mirrorDiv => ({
+            name: mirrorDiv.match(/>(.+)<\/li>/)[1],
+            url: mirrorDiv.match(/data-video="(.+)"/)[1].replace(/^\/\//, 'https://')
+          })))
       .then((mirrors) => Promise.all(mirrors.map(mirror => scrape(mirror))))
       .then((mirrors) => mirrors.map((mirror) => { mirror.dubbed = dubbed; return mirror; }))
       .then((mirrors) => mirrors.map(mirror => streamInfo(PROVIDER_NAME, mirror)));
-}
-
-function extractMirrors(body) {
-  if (!body) {
-    throw new Error('no body');
-  }
-
-  const listDiv = body.match(/<ul class="list-server-items">(.+)<\/ul>/s)[1];
-  const activeSource = body.match(/file:\W+['"]([^'"]+)['"]/)[1];
-
-  return listDiv.match(/<li class="(?:active )?linkserver".+<\/li>/g)
-      .map(mirrorDiv => ({
-        name: mirrorDiv.match(/>(.+)<\/li>/)[1],
-        url: mirrorDiv.includes('active') ? activeSource :
-            mirrorDiv.match(/data-video="(.+)"/)[1].replace(/^\/\//, 'https://')
-      }))
 }
 
 exports.Provider = Provider;
