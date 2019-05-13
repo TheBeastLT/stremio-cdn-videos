@@ -1,4 +1,4 @@
-const { addonBuilder, getRouter } = require("stremio-addon-sdk");
+const { addonBuilder } = require("stremio-addon-sdk");
 const vidsrc = require('./providers/vidsrc_provider');
 const vidstreaming = require('./providers/vidstreaming_provider');
 const wonderfulsubs = require('./providers/wonderfulsubs_provider');
@@ -73,4 +73,4 @@ async function movieStreamHandler(id) {
       // });
 }
 
-module.exports = getRouter(builder.getInterface());
+module.exports = builder.getInterface();
