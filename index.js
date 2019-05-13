@@ -1,15 +1,15 @@
-const { addonBuilder } = require("stremio-addon-sdk");
+const { addonBuilder, getRouter } = require("stremio-addon-sdk");
 const vidsrc = require('./providers/vidsrc_provider');
 const vidstreaming = require('./providers/vidstreaming_provider');
 const wonderfulsubs = require('./providers/wonderfulsubs_provider');
 const { movieMetadata, seriesMetadata } = require('./lib/metadata');
 const { cacheWrapStream } = require('./lib/cache');
 
-const PROVIDERS = [new vidsrc.Provider(), new vidstreaming.Provider(), new wonderfulsubs.Provider];
+const PROVIDERS = [new vidsrc.Provider(), new vidstreaming.Provider(), new wonderfulsubs.Provider()];
 const CACHE_MAX_AGE = process.env.CACHE_MAX_AGE || 43200;
 
 const builder = new addonBuilder({
-  id: 'com.stremio.cdn.videos',
+  id: 'com.stremio.cdn.videos.local',
   version: '1.0.0',
   name: 'CDN Videos',
   description: 'Search for movies, series and anime from various CDN providers',
@@ -73,4 +73,4 @@ async function movieStreamHandler(id) {
       // });
 }
 
-module.exports = builder.getInterface();
+module.exports = getRouter(builder.getInterface());
