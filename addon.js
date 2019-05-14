@@ -1,4 +1,3 @@
-const IS_LOCAL = !(process.env.LOCAL_NETWORK === 'false' || process.env.LOCAL_NETWORK === '0');
 const { addonBuilder } = require("stremio-addon-sdk");
 const vidsrc = require('./providers/vidsrc_provider');
 const vidstreaming = require('./providers/vidstreaming_provider');
@@ -6,7 +5,8 @@ const wonderfulsubs = require('./providers/wonderfulsubs_provider');
 const { movieMetadata, seriesMetadata } = require('./lib/metadata');
 const { cacheWrapStream } = require('./lib/cache');
 
-const PROVIDERS = [new vidsrc.Provider(), new vidstreaming.Provider(), new wonderfulsubs.Provider];
+const IS_LOCAL = !(process.env.LOCAL_NETWORK === 'false' || process.env.LOCAL_NETWORK === '0');
+const PROVIDERS = [new vidsrc.Provider(), new vidstreaming.Provider(), new wonderfulsubs.Provider()];
 const CACHE_MAX_AGE = process.env.CACHE_MAX_AGE || 43200;
 
 const builder = new addonBuilder({
@@ -19,8 +19,7 @@ const builder = new addonBuilder({
   types: ['movie', 'series'],
   idPrefixes: ['tt', 'kitsu'],
   background: 'https://i.imgur.com/Pjg3e0E.jpg',
-  logo: 'https://i.imgur.com/83CPdiS.png',
-  contactEmail: 'pauliox@beyond.lt'
+  logo: 'https://i.imgur.com/83CPdiS.png'
 });
 
 builder.defineStreamHandler((args) => {

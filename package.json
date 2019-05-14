@@ -15,7 +15,6 @@
   "dependencies": {
     "cache-manager": "^2.9.0",
     "cache-manager-mongodb": "^0.2.1",
-    "lodash": "^4.17.11",
     "needle": "^2.2.4",
     "stremio-addon-sdk": "^1.2.0"
   }
