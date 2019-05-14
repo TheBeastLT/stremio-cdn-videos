@@ -1,3 +1,4 @@
+const IS_LOCAL = !(process.env.LOCAL_NETWORK === 'false' || process.env.LOCAL_NETWORK === '0');
 const { addonBuilder } = require("stremio-addon-sdk");
 const vidsrc = require('./providers/vidsrc_provider');
 const vidstreaming = require('./providers/vidstreaming_provider');
@@ -9,7 +10,7 @@ const PROVIDERS = [new vidsrc.Provider(), new vidstreaming.Provider(), new wonde
 const CACHE_MAX_AGE = process.env.CACHE_MAX_AGE || 43200;
 
 const builder = new addonBuilder({
-  id: 'com.stremio.cdn.videos',
+  id: 'com.stremio.cdn.videos' + (IS_LOCAL ? '.local' : ''),
   version: '1.0.0',
   name: 'CDN Videos',
   description: 'Search for movies, series and anime from various CDN providers',
